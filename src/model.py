@@ -1,28 +1,32 @@
 import torch.nn as nn
 
-class ConvLayer(nn.module):
+class ConvLayer(nn.Module):
     def __init__(self, in_channels, out_channels, dropout_rate):
+        super().__init__()
+
         modules = [nn.Dropout(p=dropout_rate)] if dropout_rate > 0 else []
         modules.extend([
             nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=3, stride=2, padding=1),
             nn.ReLU()
         ])
-        self.layers = nn.ModuleList([modules])
+        self.layers = nn.ModuleList(modules)
 
     def forward(self, x):
         for layer in self.layers:
             x = layer(x)
         return x
 
-class LinearLayer(nn.module):
+class LinearLayer(nn.Module):
     def __init__(self, in_channels, out_channels, dropout_rate, relu):
+        super().__init__()
+
         modules = [nn.Dropout(p=dropout_rate)] if dropout_rate > 0 else []
         modules.extend([
-            nn.Linear(in_channels=in_channels, out_channels=out_channels),
+            nn.Linear(in_channels, out_channels),
         ])
         if relu:
             modules.append(nn.ReLU())
-        self.layers = nn.ModuleList([modules])
+        self.layers = nn.ModuleList(modules)
 
     def forward(self, x):
         for layer in self.layers:
@@ -30,7 +34,7 @@ class LinearLayer(nn.module):
         return x
 
 class ConvNet(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, hidden_size, output_size):
         super().__init__()
         dropout_rate = 0.5
 
@@ -43,9 +47,9 @@ class ConvNet(nn.Module):
         self.flatten = nn.Flatten()
 
         self.linear = nn.ModuleList([
-            LinearLayer(in_channels=(26 // 2 // 2 + 1) ** 2 * 64, out_channels=64, dropout_rate=dropout_rate, relu=True),
-            LinearLayer(in_channels=64, out_channels=64, dropout_rate=dropout_rate, relu=True),
-            LinearLayer(in_channels=64, out_channels=output_size, dropout_rate=dropout_rate, relu=False)
+            LinearLayer(in_channels=1024, out_channels=hidden_size, dropout_rate=dropout_rate, relu=True),
+            LinearLayer(in_channels=hidden_size, out_channels=hidden_size, dropout_rate=dropout_rate, relu=True),
+            LinearLayer(in_channels=hidden_size, out_channels=output_size, dropout_rate=dropout_rate, relu=False)
         ])
 
     def forward(self, x):
