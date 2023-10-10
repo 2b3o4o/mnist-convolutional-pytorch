@@ -70,7 +70,8 @@ class Trainer:
     def evaluate_accuracy(self):
         self.model.train(False)
         preds = []
-        for features, labels in self.test_loader:
+        for features, _ in self.test_loader:
+            features = features.to(self.device)
             with torch.no_grad():
                 batch_preds = self.model(features)
                 preds.extend(batch_preds.tolist())
